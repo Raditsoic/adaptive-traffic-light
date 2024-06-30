@@ -6,6 +6,7 @@ import threading
 import os
 import time
 import serial
+import requests
 from model import detect_vehicles_and_calculate_duration
 
 # List of server configurations
@@ -15,7 +16,13 @@ SERVERS = [
 ]
 
 def send_green_light_to_arduino(seconds, traffic_light):
-    pass
+    array_str = f"{seconds}, {traffic_light}"
+    url = f'http://192.168.74.90/?array={array_str}'
+    try:
+        response = requests.get(url)
+        print(response.text)
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
 
 # Function to handle adaptive sleep intervals and round-robin requests
 def adaptive_capture_requests(sockets, request_interval, lock, capture_event):

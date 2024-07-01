@@ -5,7 +5,6 @@ import pickle
 import threading
 import os
 import time
-import serial
 import requests
 from model import detect_vehicles_and_calculate_duration
 
@@ -13,16 +12,17 @@ from model import detect_vehicles_and_calculate_duration
 SERVERS = [
     {'host': 'localhost', 'port': 65432, 'output_dir': 'out/camera-1'},
     {'host': 'localhost', 'port': 65433, 'output_dir': 'out/camera-2'},
+    {'host': 'localhost', 'port': 65434, 'output_dir': 'out/camera-3'},
 ]
 
 def send_green_light_to_arduino(seconds, traffic_light):
-    array_str = f"{seconds}, {traffic_light}"
-    url = f'http://192.168.74.90/?array={array_str}'
+    array_str = f"{seconds},{traffic_light}"
+    url = f'http://192.168.93.90/?array={array_str}'
     try:
         response = requests.get(url)
         print(response.text)
     except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
+        print(f"Error: {e}")
 
 # Function to handle adaptive sleep intervals and round-robin requests
 def adaptive_capture_requests(sockets, request_interval, lock, capture_event):
@@ -46,7 +46,7 @@ def adaptive_capture_requests(sockets, request_interval, lock, capture_event):
                 # Read the current interval
                 current_interval = request_interval[0]
 
-            # Clear the event and wait for the next interval
+            # Wait for the green light duration
             capture_event.clear()
             time.sleep(current_interval)
         except Exception as e:
@@ -95,7 +95,7 @@ def receive_frames(client_socket, output_dir, server_index, request_interval, lo
 
         # Update the request interval based on the green light duration
         with lock:
-            request_interval[0] = max(green_light_duration, 1)  
+            request_interval[0] = max(green_light_duration + 1, 1)
             
         send_green_light_to_arduino(green_light_duration, server_index + 1)
 

@@ -3,7 +3,7 @@ import cv2
 
 model = YOLO('yolov8l.pt')
 
-conf_threshold = 0.1
+conf_threshold = 0.25
 
 target_classes = ['motorcycle', 'car', 'truck', 'bus']
 
@@ -30,9 +30,12 @@ def detect_vehicles_and_calculate_duration(image):
                 cv2.putText(image, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
     # Calculate green light duration
-    base_duration = 10  
-    time_per_vehicle = 1  
-    green_light_duration = base_duration + (object_count * time_per_vehicle)
+    if(object_count == 0):
+        green_light_duration = 0
+    else:
+        base_duration = 10  
+        time_per_vehicle = 3
+        green_light_duration = base_duration + (object_count * time_per_vehicle)
 
     cv2.putText(image, f'Total vehicles: {object_count}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     cv2.putText(image, f'Green light: {green_light_duration}s', (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)

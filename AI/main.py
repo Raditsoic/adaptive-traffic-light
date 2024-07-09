@@ -17,7 +17,7 @@ SERVERS = [
 
 def send_green_light_to_arduino(seconds, traffic_light):
     array_str = f"{seconds},{traffic_light}"
-    url = f'http://192.168.160.90/?array={array_str}'
+    url = f'http://192.168.93.90/?array={array_str}'
     try:
         response = requests.get(url)
         print(response.text)
@@ -95,10 +95,7 @@ def receive_frames(client_socket, output_dir, server_index, request_interval, lo
 
         # Update the request interval based on the green light duration
         with lock:
-            if green_light_duration == 0:
-                request_interval[0] = max(green_light_duration, 1)
-            else:
-                request_interval[0] = max(green_light_duration + 3, 1)
+            request_interval[0] = max(green_light_duration + 1, 1)
             
         send_green_light_to_arduino(green_light_duration, server_index + 1)
 
